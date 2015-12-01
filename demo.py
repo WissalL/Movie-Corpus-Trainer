@@ -80,8 +80,6 @@ def gen_vocab(targets):
 def gen_model():
 
 	model = skipthoughts.load_model()
-	np.save(os.path.join("data", "model.npy"), model)
-
 	return model
 
 
@@ -108,20 +106,13 @@ if __name__ == "__main__":
 		else gen_responses(conversations)
 	)
 
-	sources = sources[:100]
-	targets = targets[:100]
-
 	print "===== Loaded Sources And Targets ====="
 
 	dictloc = gen_vocab(targets)
 
 	print "===== Loaded Vocabulary ====="
 
-	model = (
-		np.load(os.path.join("data", "model.npy"))
-		if False and os.path.isfile(os.path.join("data", "model.npy"))
-		else gen_model()
-	)
+	model = gen_model()
 
 	print "===== Loaded Model ====="
 
