@@ -14,7 +14,8 @@ class ChatBot(object):
 
 	def gen_response(self, message):
 		return tools.run_sampler(
-			self.trmodel, skipthoughts.encode(self.stmodel, [message])
+			self.trmodel, 
+			skipthoughts.encode(self.stmodel, [message], use_norm=True, verbose=False)
 		)
 
 
