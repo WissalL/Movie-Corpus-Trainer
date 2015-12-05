@@ -45,7 +45,7 @@ def gen_cornell_conversations():
 		for conversation in conversation_locs
 	])
 
-	np.save(os.path.join("data", "cornell_conversations.npy"), conversations)
+	np.save("data/cornell_conversations.npy", conversations)
 
 	return conversations
 
@@ -63,10 +63,18 @@ def gen_cornell_responses(conversations):
 	sources = np.array(sources, dtype=str)
 	targets = np.array(targets, dtype=str)
 
-	np.save(os.path.join("data", "source_cornell_sequences.npy"), sources)
-	np.save(os.path.join("data", "target_cornell_sequences.npy"), targets)
+	np.save("data/source_cornell_sequences.npy", sources)
+	np.save("data/target_cornell_sequences.npy", targets)
 
 	return sources, targets
+
+
+def gen_fry_responses():
+
+	return (
+		np.genfromtxt("data/fry_sources.txt", delimiter="\n", dtype=str), 
+		np.genfromtxt("data/fry_targets.txt", delimiter="\n", dtype=str)
+	)
 
 
 def gen_vocab(targets):
@@ -85,38 +93,63 @@ def gen_model():
 	return model
 
 
+def gen_encodings(model, sources, category):
+
+	result = skipthoughts.encode(model, sources, use_norm=True, verbose=True)
+	np.save("data/source_" + category + "_encodings.npy", result)
+
+	return result
+
+
 def go_train(sources, targets, model, dictloc):
 
 	train.trainer(targets, sources, model, 
-		saveto=os.path.join("data", "trainer.npz"), dictionary=dictloc)
+		saveto="data/trainer.npz", dictionary=dictloc, saveFreq=100, 
+		reload_=os.path.isfile("data/trainer.npz"))
 
 
-if __name__ == "__main__":
-
+def gen_cornell(model):
 	conversations = (
-		np.load(os.path.join("data", "cornell_conversations.npy")) 
-		if os.path.isfile(os.path.join("data", "cornell_conversations.npy")) 
-		else gen_conversations()
+		np.load("data/cornell_conversations.npy")
+		if os.path.isfile("data/cornell_conversations.npy")
+		else gen_cornell_conversations()
 	)
 	print "===== Loaded Cornell Conversations ====="
 
 	sources, targets = (
-		np.load(os.path.join("data", "source_cornell_sequences.npy")), 
-		np.load(os.path.join("data", "target_cornell_sequences.npy"))
-		if os.path.isfile(os.path.join("data", "source_cornell_sequences.npy")) 
-			and os.path.isfile(os.path.join("data", "target_cornell_sequences.npy"))
-		else gen_responses(conversations)
+		np.load("data/source_cornell_sequences.npy"),
+		np.load("data/target_cornell_sequences.npy")
+		if os.path.isfile("data/source_cornell_sequences.npy")
+			and os.path.isfile("data/target_cornell_sequences.npy")
+		else gen_cornell_responses(conversations)
 	)
 
 	print "===== Loaded Cornell Sources And Targets ====="
+	
 
-	dictloc = gen_vocab(targets)
+def gen_fry(model):
 
-	print "===== Loaded Vocabulary ====="
+	sources, targets = gen_fry_responses();
+
+	print "===== Loaded Fry Sources and Targets ====="
+
+	sources = sources[:200]
+	targets = targets[:200]
+
+	return sources, targets
+
+
+if __name__ == "__main__":
 
 	model = gen_model()
 
 	print "===== Loaded Model ====="
+
+	sources, targets = gen_fry(model)
+
+	dictloc = gen_vocab(targets)
+
+	print "===== Loaded Vocabulary ====="
 
 	go_train(sources, targets, model, dictloc)
 

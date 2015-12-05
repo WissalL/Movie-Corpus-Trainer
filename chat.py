@@ -7,7 +7,7 @@ from skipthoughts.decoding import tools
 class ChatBot(object):
 
 	def __init__(self):
-		self.trmodel = tools.load_model("data/training.npz", "data/dictionary.pkl")
+		self.trmodel = tools.load_model("data/trainer.npz", "data/dictionary.pkl")
 		print "===== Loaded Trained Model ====="
 		self.stmodel = skipthoughts.load_model()
 		print "===== Loaded Skipthoughts Model ====="
