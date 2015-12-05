@@ -3,7 +3,8 @@ import os
 from skipthoughts import skipthoughts
 from skipthoughts.decoding import vocab, train
 
-def gen_conversations():
+
+def gen_cornell_conversations():
 	""" Parse the movie lines from the Cornell Movie Dialogs Corpus and store 
 		them in a numpy-ready file as conversations.
 	"""
@@ -44,12 +45,12 @@ def gen_conversations():
 		for conversation in conversation_locs
 	])
 
-	np.save(os.path.join("data", "conversations.npy"), conversations)
+	np.save(os.path.join("data", "cornell_conversations.npy"), conversations)
 
 	return conversations
 
 
-def gen_responses(conversations):
+def gen_cornell_responses(conversations):
 	""" Separate conversations into two sequences dividing sources and targets
 	"""
 
@@ -62,19 +63,20 @@ def gen_responses(conversations):
 	sources = np.array(sources, dtype=str)
 	targets = np.array(targets, dtype=str)
 
-	np.save(os.path.join("data", "source_sequences.npy"), sources)
-	np.save(os.path.join("data", "target_sequences.npy"), targets)
+	np.save(os.path.join("data", "source_cornell_sequences.npy"), sources)
+	np.save(os.path.join("data", "target_cornell_sequences.npy"), targets)
 
 	return sources, targets
 
 
 def gen_vocab(targets):
 
-	if not os.path.isfile(os.path.join("data", "dictionary.pkl")):
+	path = os.path.join("data", "dictionary.pkl")
+	if not os.path.isfile(path):
 		worddict, wordcount = vocab.build_dictionary(targets)
-		vocab.save_dictionary(worddict, wordcount, os.path.join("data", "dictionary.pkl"))
+		vocab.save_dictionary(worddict, wordcount, path)
 
-	return os.path.join("data", "dictionary.pkl")
+	return path
 
 
 def gen_model():
@@ -92,21 +94,21 @@ def go_train(sources, targets, model, dictloc):
 if __name__ == "__main__":
 
 	conversations = (
-		np.load(os.path.join("data", "conversations.npy")) 
-		if os.path.isfile(os.path.join("data", "conversations.npy")) 
+		np.load(os.path.join("data", "cornell_conversations.npy")) 
+		if os.path.isfile(os.path.join("data", "cornell_conversations.npy")) 
 		else gen_conversations()
 	)
-	print "===== Loaded Conversations ====="
+	print "===== Loaded Cornell Conversations ====="
 
 	sources, targets = (
-		np.load(os.path.join("data", "source_sequences.npy")), 
-		np.load(os.path.join("data", "target_sequences.npy"))
-		if os.path.isfile(os.path.join("data", "source_sequences.npy")) 
-			and os.path.isfile(os.path.join("data", "target_sequences.npy"))
+		np.load(os.path.join("data", "source_cornell_sequences.npy")), 
+		np.load(os.path.join("data", "target_cornell_sequences.npy"))
+		if os.path.isfile(os.path.join("data", "source_cornell_sequences.npy")) 
+			and os.path.isfile(os.path.join("data", "target_cornell_sequences.npy"))
 		else gen_responses(conversations)
 	)
 
-	print "===== Loaded Sources And Targets ====="
+	print "===== Loaded Cornell Sources And Targets ====="
 
 	dictloc = gen_vocab(targets)
 
