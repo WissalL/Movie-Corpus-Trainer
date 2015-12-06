@@ -77,9 +77,9 @@ def gen_fry_responses():
 	)
 
 
-def gen_vocab(targets):
+def gen_vocab(targets, fname):
 
-	path = os.path.join("data", "dictionary.pkl")
+	path = os.path.join("data", fname)
 	if not os.path.isfile(path):
 		worddict, wordcount = vocab.build_dictionary(targets)
 		vocab.save_dictionary(worddict, wordcount, path)
@@ -104,11 +104,15 @@ def gen_encodings(model, sources, category):
 def go_train(sources, targets, model, dictloc, max_epochs):
 
 	train.trainer(targets, sources, model, 
-		saveto="data/trainer.npz", dictionary=dictloc, max_epochs, saveFreq=100, 
-		reload_=os.path.isfile("data/trainer.npz"))
+		saveto="data/trainer.npz", 
+		dictionary=dictloc, 
+		max_epochs=max_epochs, 
+		saveFreq=100, 
+		reload_=os.path.isfile("data/trainer.npz")
+	)
 
 
-def gen_cornell(model):
+def gen_cornell():
 	conversations = (
 		np.load("data/cornell_conversations.npy")
 		if os.path.isfile("data/cornell_conversations.npy")
@@ -124,18 +128,6 @@ def gen_cornell(model):
 		else gen_cornell_responses(conversations)
 	)
 
-	print "===== Loaded Cornell Sources And Targets ====="
-	
-
-def gen_fry(model):
-
-	sources, targets = gen_fry_responses();
-
-	print "===== Loaded Fry Sources and Targets ====="
-
-	sources = sources[:200]
-	targets = targets[:200]
-
 	return sources, targets
 
 
@@ -145,24 +137,26 @@ if __name__ == "__main__":
 
 	print "===== Loaded Model ====="
 
-	frySources, fryTargets = gen_fry(combinedModel)
+	frySources, fryTargets = gen_fry_responses()
 
-	fryDictloc = gen_vocab(fryTargets)
+	print "===== Loaded Fry Sources and Targets ====="
+
+	fryDictloc = gen_vocab(fryTargets, "dictionary_fry.pkl")
 
 	print "====== Loaded Vocabulary - Fry ====="
 
-	cornellSources, cornellTargets = gen_cornell(combinedModel)
+	cornellSources, cornellTargets = gen_cornell()
 
-	cornellDictloc = gen_vocab(cornellTargets)
+	print "===== Loaded Cornell Sources And Targets ====="
+
+	cornellDictloc = gen_vocab(cornellTargets, "dictionary_cornell.pkl")
 
 	print "====== Loaded Vocabulary - Cornell ====="
 
-	print "===== Loaded Vocabulary ====="
-
-	go_train(cornellSources, cornellTargets, combinedModel, cornellDictloc, 5)
+	go_train(cornellSources, cornellTargets, combinedModel, cornellDictloc, 3)
 
 	print "===== Finished Training - Cornell ====="
 
-	go_train(frySources, fryTargets, combinedModel, fryDictloc, 20)
+	go_train(frySources, fryTargets, combinedModel, fryDictloc, 7)
 
 	print "===== Finished Training - Fry ====="
