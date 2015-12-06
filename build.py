@@ -101,10 +101,10 @@ def gen_encodings(model, sources, category):
 	return result
 
 
-def go_train(sources, targets, model, dictloc):
+def go_train(sources, targets, model, dictloc, max_epochs):
 
 	train.trainer(targets, sources, model, 
-		saveto="data/trainer.npz", dictionary=dictloc, saveFreq=100, 
+		saveto="data/trainer.npz", dictionary=dictloc, max_epochs, saveFreq=100, 
 		reload_=os.path.isfile("data/trainer.npz"))
 
 
@@ -141,16 +141,28 @@ def gen_fry(model):
 
 if __name__ == "__main__":
 
-	model = gen_model()
+	combinedModel = gen_model()
 
 	print "===== Loaded Model ====="
 
-	sources, targets = gen_fry(model)
+	frySources, fryTargets = gen_fry(combinedModel)
 
-	dictloc = gen_vocab(targets)
+	fryDictloc = gen_vocab(fryTargets)
+
+	print "====== Loaded Vocabulary - Fry ====="
+
+	cornellSources, cornellTargets = gen_cornell(combinedModel)
+
+	cornellDictloc = gen_vocab(cornellTargets)
+
+	print "====== Loaded Vocabulary - Cornell ====="
 
 	print "===== Loaded Vocabulary ====="
 
-	go_train(sources, targets, model, dictloc)
+	go_train(cornellSources, cornellTargets, combinedModel, cornellDictloc, 5)
 
-	print "===== Finished Training ====="
+	print "===== Finished Training - Cornell ====="
+
+	go_train(frySources, fryTargets, combinedModel, fryDictloc, 20)
+
+	print "===== Finished Training - Fry ====="
