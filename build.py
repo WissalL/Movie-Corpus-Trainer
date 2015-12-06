@@ -144,7 +144,7 @@ if __name__ == "__main__":
 	fryDictloc = gen_vocab(fryTargets, "dictionary_fry.pkl")
 
 	print "====== Loaded Vocabulary - Fry ====="
-
+	"""
 	cornellSources, cornellTargets = gen_cornell()
 
 	print "===== Loaded Cornell Sources And Targets ====="
@@ -156,7 +156,7 @@ if __name__ == "__main__":
 	go_train(cornellSources, cornellTargets, combinedModel, cornellDictloc, 3)
 
 	print "===== Finished Training - Cornell ====="
-
-	go_train(frySources, fryTargets, combinedModel, fryDictloc, 7)
+	"""
+	go_train(frySources, fryTargets, combinedModel, fryDictloc, 5)
 
 	print "===== Finished Training - Fry ====="
