@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import time
 from skipthoughts import skipthoughts
 from skipthoughts.decoding import vocab, train
 
@@ -71,10 +72,32 @@ def gen_cornell_responses(conversations):
 
 def gen_fry_responses():
 
-	return (
-		np.genfromtxt("data/fry_sources.txt", delimiter="\n", dtype=str), 
-		np.genfromtxt("data/fry_targets.txt", delimiter="\n", dtype=str)
-	)
+	if os.path.isfile("data/fry_sources.npy") and os.path.isfile("data/fry_targets.npy"):
+		return np.load("data/fry_sources.npy"), np.load("data/fry_targets.npy")
+
+	sources = np.genfromtxt("data/fry_sources.txt", delimiter="\n", dtype=str)
+	targets = np.genfromtxt("data/fry_targets.txt", delimiter="\n", dtype=str)
+	assert len(sources) == len(targets)
+	i = 0
+	while i < len(sources) and i < len(targets):
+		sources[i] = sources[i].strip()
+		targets[i] = targets[i].strip()
+		if(
+			sources[i] == "..." or targets[i] == "..." or 
+			sources[i] == "."   or targets[i] == "."   or
+			sources[i] == "?"   or targets[i] == "?"   or
+			sources[i] == "!"   or targets[i] == "!"
+		):
+			sources = np.delete(sources, i)
+			targets = np.delete(targets, i)
+		else:
+			i += 1
+
+
+	np.save("data/fry_sources.npy", sources)
+	np.save("data/fry_targets.npy", targets)
+
+	return sources, targets
 
 
 def gen_vocab(targets, fname):
@@ -133,6 +156,8 @@ def gen_cornell():
 
 if __name__ == "__main__":
 
+	start = time.time()
+
 	combinedModel = gen_model()
 
 	print "===== Loaded Model ====="
@@ -144,6 +169,7 @@ if __name__ == "__main__":
 	fryDictloc = gen_vocab(fryTargets, "dictionary_fry.pkl")
 
 	print "====== Loaded Vocabulary - Fry ====="
+	
 	"""
 	cornellSources, cornellTargets = gen_cornell()
 
@@ -157,6 +183,13 @@ if __name__ == "__main__":
 
 	print "===== Finished Training - Cornell ====="
 	"""
-	go_train(frySources, fryTargets, combinedModel, fryDictloc, 5)
+
+	go_train(frySources, fryTargets, combinedModel, fryDictloc, 12)
+
+	end = time.time()
 
 	print "===== Finished Training - Fry ====="
+
+	m, s = divmod(end - start, 60)
+	h, m = divmod(m, 60)
+	print "Finished in %d:%02d:%02d hours" % (h, m, s)
