@@ -1,5 +1,7 @@
 # Movie-Corpus-Trainer
 
+This is a chat bot that lets you talk to a movie or television character, given scripts of that character's conversations. For this demo, we use the character Fry from the television series Futurama.
+
 ## Running the trainer
 
 Put my fork of skip-thoughts inside your clone of this repo:
@@ -23,10 +25,23 @@ Movie-Corpus-Trainer/
 	demo.py
 ```
 
-Put the data from the skip-thoughts readme into `Movie-Corpus-Trainer/skipthoughts/data`. Put the [Cornell Movie Dialogs Corpus](http://www.mpi-sws.org/~cristian/Cornell_Movie-Dialogs_Corpus.html) in `Movie-Corpus-Trainer/data/cornell-movie-dialogs-corpus`. Your other dialog will go in this data folder.
+Put the data from the skip-thoughts readme into `Movie-Corpus-Trainer/skipthoughts/data`. Put your script data in the `Movie-Corpus-Trainer/data` directory. For this demo, we use `fry_sources.txt` and `fry_targets.txt`, where sources are lines said to Fry, and targets are his responses to those lines.
 
 Write a file to your home directory called `.theanorc` and put in it:
 ```
 [global]
 floatX = float32
 ```
+
+Run:
+```
+python build.py
+```
+It will take multiple hours to finish.
+
+## Running the chat bot
+
+```
+python chat.py
+```
+When you send messages, your punctuation should be separated from the words. For example: `Who are you ?`.
