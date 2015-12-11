@@ -18,17 +18,27 @@ class ChatBot(object):
 		return tools.run_sampler(
 			self.trmodel, 
 			skipthoughts.encode(self.stmodel, [message], use_norm=True, verbose=False)
-		)
+		)[0]
 
 
 if __name__ == "__main__":
 
 	bot = ChatBot()
+
+	print
+	print "====================================="
+	print "=====        Done Loading       ====="
+	print "=====  You can now talk to Fry  ====="
+	print
 	
 	while True:
 		message = raw_input("Your message: ")
+
 		if len(message) == 0:
+			print "===== You are done talking to Fry. ====="
 			break
 
-		print bot.gen_response(message)[0]
+		response = bot.gen_response(message)
+		print "Fry says:    ", response
+		print
 

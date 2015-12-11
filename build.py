@@ -5,6 +5,7 @@ from skipthoughts import skipthoughts
 from skipthoughts.decoding import vocab, train
 
 
+# For the purposes of this demo, the Cornell corpus is never used
 def gen_cornell_conversations():
 	""" Parse the movie lines from the Cornell Movie Dialogs Corpus and store 
 		them in a numpy-ready file as conversations.
@@ -71,13 +72,24 @@ def gen_cornell_responses(conversations):
 
 
 def gen_fry_responses():
+	""" Fry's conversations are determined by separating the lines spoken to
+		Fry (sources) and Fry's responses to those lines (targets). They should
+		be located in "data/fry_sources.txt" and "data/fry_targets.txt"
+		respectively.
+
+		Data gets parsed as Numpy arrays, with conversations containing blank
+		lines or just punctuation removed.
+	"""
 
 	if os.path.isfile("data/fry_sources.npy") and os.path.isfile("data/fry_targets.npy"):
 		return np.load("data/fry_sources.npy"), np.load("data/fry_targets.npy")
 
 	sources = np.genfromtxt("data/fry_sources.txt", delimiter="\n", dtype=str)
 	targets = np.genfromtxt("data/fry_targets.txt", delimiter="\n", dtype=str)
+
 	assert len(sources) == len(targets)
+
+	# remove useless lines
 	i = 0
 	while i < len(sources) and i < len(targets):
 		sources[i] = sources[i].strip()
@@ -101,6 +113,7 @@ def gen_fry_responses():
 
 
 def gen_vocab(targets, fname):
+	""" Use Fry's target lines to generate a dictionary of words """
 
 	path = os.path.join("data", fname)
 	if not os.path.isfile(path):
@@ -111,12 +124,16 @@ def gen_vocab(targets, fname):
 
 
 def gen_model():
+	""" Get the Skipthoughts model to be used in encoding """
 
 	model = skipthoughts.load_model()
 	return model
 
 
 def gen_encodings(model, sources, category):
+	""" Generate encodings in advance. It can save computation time if
+		training multiple times. Not used in this demo.
+	"""
 
 	result = skipthoughts.encode(model, sources, use_norm=True, verbose=True)
 	np.save("data/source_" + category + "_encodings.npy", result)
@@ -125,6 +142,9 @@ def gen_encodings(model, sources, category):
 
 
 def go_train(sources, targets, model, dictloc, max_epochs):
+	""" Train the network on the conversations and store them in 
+		data/trainer.npz 
+	"""
 
 	train.trainer(targets, sources, model, 
 		saveto="data/trainer.npz", 
@@ -136,6 +156,9 @@ def go_train(sources, targets, model, dictloc, max_epochs):
 
 
 def gen_cornell():
+	""" Load preparsed Cornell conversations and separate them into sources
+		and targets
+	"""
 	conversations = (
 		np.load("data/cornell_conversations.npy")
 		if os.path.isfile("data/cornell_conversations.npy")
@@ -168,27 +191,13 @@ if __name__ == "__main__":
 
 	fryDictloc = gen_vocab(fryTargets, "dictionary_fry.pkl")
 
-	print "====== Loaded Vocabulary - Fry ====="
-	
-	"""
-	cornellSources, cornellTargets = gen_cornell()
+	print "====== Loaded Fry Vocabulary ====="
 
-	print "===== Loaded Cornell Sources And Targets ====="
-
-	cornellDictloc = gen_vocab(cornellTargets, "dictionary_cornell.pkl")
-
-	print "====== Loaded Vocabulary - Cornell ====="
-
-	go_train(cornellSources, cornellTargets, combinedModel, cornellDictloc, 3)
-
-	print "===== Finished Training - Cornell ====="
-	"""
-
-	go_train(frySources, fryTargets, combinedModel, fryDictloc, 12)
+	go_train(frySources, fryTargets, combinedModel, fryDictloc, 20)
 
 	end = time.time()
 
-	print "===== Finished Training - Fry ====="
+	print "===== Finished Fry Training ====="
 
 	m, s = divmod(end - start, 60)
 	h, m = divmod(m, 60)
